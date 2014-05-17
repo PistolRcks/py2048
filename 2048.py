@@ -25,41 +25,39 @@ TILES = [
 		pygame.image.load("1024.png"),
 		pygame.image.load("2048.png")
 		]
-grid = [TILES[0], TILES[0], TILES[0], TILES[0], 
-		TILES[0], TILES[0], TILES[0], TILES[0], 
-		TILES[0], TILES[0], TILES[0], TILES[0], 
-		TILES[0], TILES[0], TILES[0], TILES[0] ]
+grid = [0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0 ]
 def newtile():
 	whichTile = randint(1,10)
 	if whichTile == 10:
-		n = TILES[2]
+		n = 2
 	else:
-		n = TILES[1]
+		n = 1
 	empty = []
 	for i in range(16):
-		if grid[i] == TILES[0]:
+		if grid[i] == 0:
 			empty.append(i)
 	if empty == []:
 		return 0
 	new = randint(0,len(empty)-1)
 	grid[empty[new]] = n
 def combine(i, move, edge):
-	if grid[i] != TILES[0] and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
+	if grid[i] != 0 and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
 		if grid[i + move] == grid[i]:
-			for x in range(1,12):
-				if grid[i] == TILES[x]:
-					grid[i + move] = TILES[x + 1]
-					grid[i] = TILES[0]
-					global score, changed
-					score += 2**(x+1)
-					changed = True
-					if x + 1 >= 11:
-						message = "You win!"
+			grid[i + move] = grid[i] + 1 
+			grid[i] = 0
+			global score, changed
+			score += 2**(x+1)
+			changed = True
+			if x + 1 >= 11:
+				message = "You win!"
 def movetile(i, move, edge):
-	if grid[i] != TILES[0] and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
-		if grid[i + move] == TILES[0]:
+	if grid[i] != 0 and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
+		if grid[i + move] == 0:
 			grid[i + move] = grid[i]
-			grid[i] = TILES[0]
+			grid[i] = 0
 			movetile(i + move, move, edge)
 			global changed
 			changed = True
@@ -99,7 +97,7 @@ while not done:
 	ypos = 5
 	for x in range(4):
 		for i in range(4):
-			screen.blit(grid[4 * x + i], [xpos, ypos])
+			screen.blit(TILES[grid[4 * x + i]], [xpos, ypos])
 			xpos += 100
 		xpos = 5
 		ypos += 100
