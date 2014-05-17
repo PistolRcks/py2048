@@ -127,4 +127,4 @@ while not done:
 		newtile()
 	
 	clock.tick(30)
-quit()
+pygame.quit()
