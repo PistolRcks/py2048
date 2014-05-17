@@ -65,7 +65,8 @@ def movetile(i, move, edge):
 			changed = True
 
 
-print("\nWelcome to 2048. Use the arrow keys to move.")
+#print("\nWelcome to 2048. Use the arrow keys to move.")
+message = "Use arrow keys to move."
 newtile()
 newtile()
 
