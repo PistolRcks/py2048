@@ -97,7 +97,7 @@ while not done:
 			if event.key == pygame.K_r:
 				restart()
 				continue
-			if event.key == pygame.K_q
+			if event.key == pygame.K_q:
 				done = True
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
 	screen.fill(GRAY)
