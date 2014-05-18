@@ -10,7 +10,6 @@ pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
 score = 0
 pressed = False
-message = ""
 TILES = [
 		pygame.image.load("0.png"),
 		pygame.image.load("2.png"),
@@ -25,10 +24,6 @@ TILES = [
 		pygame.image.load("1024.png"),
 		pygame.image.load("2048.png")
 		]
-grid = [0, 0, 0, 0, 
-		0, 0, 0, 0, 
-		0, 0, 0, 0, 
-		0, 0, 0, 0 ]
 def newtile():
 	whichTile = randint(1,10)
 	if whichTile == 10:
@@ -61,12 +56,19 @@ def movetile(i, move, edge):
 			movetile(i + move, move, edge)
 			global changed
 			changed = True
+def restart():
+	global message, score, grid
+	message = ""
+	score = 0
+	grid = [0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0, 
+		0, 0, 0, 0 ]
+	newtile()
+	newtile()
 
-
-#print("\nWelcome to 2048. Use the arrow keys to move.")
+restart()
 message = "Use arrow keys to move."
-newtile()
-newtile()
 
 while not done:
 	pressed = False
@@ -91,6 +93,12 @@ while not done:
 				move = 4
 				edge = [12, 13, 14, 15]
 				pressed = True
+			
+			if event.key == pygame.K_r:
+				restart()
+				continue
+			if event.key == pygame.K_q:
+				done = True
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
 	screen.fill(GRAY)
 	xpos = 5
