@@ -1,15 +1,18 @@
 #!/usr/bin/python
 from random import randint
 import pygame
-pygame.init()
+
 done = False
+score = 0
+
+pygame.init()
 clock = pygame.time.Clock()
 size = (400, 400)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
-score = 0
 pressed = False
+
 TILES = [
 		pygame.image.load("0.png"),
 		pygame.image.load("2.png"),
@@ -24,6 +27,7 @@ TILES = [
 		pygame.image.load("1024.png"),
 		pygame.image.load("2048.png")
 		]
+		
 def newtile():
 	whichTile = randint(1,10)
 	if whichTile == 10:
@@ -38,32 +42,75 @@ def newtile():
 		return 0
 	new = randint(0,len(empty)-1)
 	grid[empty[new]] = n
+	
+def hasLost():
+	canMove = False
+	move = -1
+	edge = [0, 4, 8, 12]
+	for i in range(16):
+		if moveable(i, move, edge) or combinable(i, move, edge):
+			canMove = True
+	move = 1
+	edge = [3, 7, 11, 15]
+	for i in range(16):
+		if moveable(i, move, edge) or combinable(i, move, edge):
+			canMove = True
+	move = -4
+	edge = [0, 1, 2, 3]
+	for i in range(16):
+		if moveable(i, move, edge) or combinable(i, move, edge):
+			canMove = True
+	move = 4
+	edge = [12, 13, 14, 15]
+	for i in range(16):
+		if moveable(i, move, edge) or combinable(i, move, edge):
+			canMove = True
+	if not canMove:
+		return True
+	else:
+		return False
+		
+def isEdge(i, edge):
+	if i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
+		return False
+	else:
+		return True
+def moveable(i, move, edge):
+	if not isEdge(i, edge):
+		if grid[i] != 0 and grid[i + move] == 0:
+			return True
+			
+def combinable(i, move, edge):
+	if not isEdge(i, edge):
+		if grid[i] != 0 and grid[i + move] == grid[i]:
+			return True
+		
 def combine(i, move, edge):
-	if grid[i] != 0 and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
-		if grid[i + move] == grid[i]:
-			grid[i + move] = grid[i] + 1 
-			grid[i] = 0
-			global score, changed
-			score += 2**(x+1)
-			changed = True
-			if x + 1 >= 11:
-				message = "You win!"
+	if combinable(i, move, edge):
+		grid[i + move] = grid[i] + 1 
+		grid[i] = 0
+		global score, changed
+		score += 2**(x+1)
+		changed = True
+		if x + 1 >= 11:
+			message = "You win!"
+			
 def movetile(i, move, edge):
-	if grid[i] != 0 and i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
-		if grid[i + move] == 0:
-			grid[i + move] = grid[i]
-			grid[i] = 0
-			movetile(i + move, move, edge)
-			global changed
-			changed = True
+	if moveable(i, move, edge):
+		grid[i + move] = grid[i]
+		grid[i] = 0
+		movetile(i + move, move, edge)
+		global changed
+		changed = True
+		
 def restart():
 	global message, score, grid
 	message = ""
 	score = 0
 	grid = [0, 0, 0, 0, 
-		0, 0, 0, 0, 
-		0, 0, 0, 0, 
-		0, 0, 0, 0 ]
+			0, 0, 0, 0, 
+			0, 0, 0, 0, 
+			0, 0, 0, 0 ]
 	newtile()
 	newtile()
 
@@ -127,11 +174,13 @@ while not done:
 			for i in reversed(range(16)):
 				movetile(i, move, edge)
 		if not changed:
-			message = "Invalid move."
+			if hasLost():
+				message = "Game over."
+			else:
+				message = "Invalid move"
 			continue
 		else:
 			message = ""
 		newtile()
-	
 	clock.tick(30)
 pygame.quit()
