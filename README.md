@@ -8,4 +8,3 @@ Coming soon
 -----------
 
 * Better overall UX
-* Installers for Windows and popular Linux distros
