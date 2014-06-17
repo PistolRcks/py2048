@@ -5,10 +5,14 @@ from button import Button
 
 pygame.init()
 clock = pygame.time.Clock()
-size = (400, 400)
+size = (400, 430)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
+
+#GUI
+button_restart = Button("restart.png", 342, 400)
+button_help = Button("help.png", 371, 400)
 
 TILES = [
 		pygame.image.load("0.png"),
@@ -158,9 +162,11 @@ while running:
 		elif event.type == pygame.KEYDOWN:
 			key_action[event.key]()
 			pressed = True
-#		elif event.type == pygame.MOUSEBUTTONDOWN:
-#			if button.clicked():
-#				pass
+		elif event.type == pygame.MOUSEBUTTONDOWN:
+			if button_restart.clicked():
+				restart()
+			elif button_help.clicked():
+				message = "Use arrow keys to move."
 
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
 	screen.fill(GRAY)
@@ -172,6 +178,8 @@ while running:
 			xpos += 100
 		xpos = 5
 		ypos += 100
+	button_restart.draw(screen)
+	button_help.draw(screen)
 	pygame.display.flip()
 	if pressed and can_move:
 		changed = False

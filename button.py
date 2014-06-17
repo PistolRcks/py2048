@@ -1,4 +1,4 @@
-#example: helloButton = new Button(sayHello, "hello.png", 5, 5)
+#example: button = Button("button.png", 5, 5)
 import pygame
 
 class Button(object):
