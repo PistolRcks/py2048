@@ -146,8 +146,8 @@ key_action = { pygame.K_LEFT : move_left,
 		pygame.K_RIGHT : move_right,
 		pygame.K_UP : move_up,
 		pygame.K_DOWN : move_down,
-		pygame.K_r: restart,
-		pygame.K_q: quit_game,
+		pygame.K_r : restart,
+		pygame.K_q : quit_game,
 }
 
 restart()
@@ -160,8 +160,11 @@ while running:
 		if event.type == pygame.QUIT:
 			running = False
 		elif event.type == pygame.KEYDOWN:
-			key_action[event.key]()
-			pressed = True
+			try:
+				key_action[event.key]()
+				pressed = True
+			except KeyError:
+				pass
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			if button_restart.clicked():
 				restart()
