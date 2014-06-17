@@ -1,9 +1,7 @@
 #!/usr/bin/python
 from random import randint
 import pygame
-
-done = False
-score = 0
+from button import Button
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -11,7 +9,6 @@ size = (400, 400)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
-pressed = False
 
 TILES = [
 		pygame.image.load("0.png"),
@@ -27,7 +24,7 @@ TILES = [
 		pygame.image.load("1024.png"),
 		pygame.image.load("2048.png")
 		]
-		
+
 def newtile():
 	whichTile = randint(1,10)
 	if whichTile == 10:
@@ -42,8 +39,43 @@ def newtile():
 		return 0
 	new = randint(0,len(empty)-1)
 	grid[empty[new]] = n
+
+def isEdge(i, edge):
+	if i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
+		return False
+	else:
+		return True
+
+def moveable(i, move, edge):
+	if not isEdge(i, edge):
+		if grid[i] != 0 and grid[i + move] == 0:
+			return True
+
+def combinable(i, move, edge):
+	if not isEdge(i, edge):
+		if grid[i] != 0 and grid[i + move] == grid[i]:
+			return True
+
+def combine(i, move, edge):
+	if combinable(i, move, edge):
+		grid[i + move] = grid[i] + 1
+		grid[i] = 0
+		global score, changed, can_move
+		score += 2**(x+1)
+		changed = True
+		if x + 1 >= 11:
+			message = "You win!"
+			can_move = False
+
+def movetile(i, move, edge):
+	if moveable(i, move, edge):
+		grid[i + move] = grid[i]
+		grid[i] = 0
+		movetile(i + move, move, edge)
+		global changed
+		changed = True
 	
-def hasLost():
+def haslost():
 	canMove = False
 	move = -1
 	edge = [0, 4, 8, 12]
@@ -69,83 +101,67 @@ def hasLost():
 		return True
 	else:
 		return False
-		
-def isEdge(i, edge):
-	if i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
-		return False
-	else:
-		return True
-def moveable(i, move, edge):
-	if not isEdge(i, edge):
-		if grid[i] != 0 and grid[i + move] == 0:
-			return True
-			
-def combinable(i, move, edge):
-	if not isEdge(i, edge):
-		if grid[i] != 0 and grid[i + move] == grid[i]:
-			return True
-		
-def combine(i, move, edge):
-	if combinable(i, move, edge):
-		grid[i + move] = grid[i] + 1 
-		grid[i] = 0
-		global score, changed
-		score += 2**(x+1)
-		changed = True
-		if x + 1 >= 11:
-			message = "You win!"
-			
-def movetile(i, move, edge):
-	if moveable(i, move, edge):
-		grid[i + move] = grid[i]
-		grid[i] = 0
-		movetile(i + move, move, edge)
-		global changed
-		changed = True
-		
+
 def restart():
-	global message, score, grid
+	global message, score, grid, can_move
 	message = ""
 	score = 0
-	grid = [0, 0, 0, 0, 
-			0, 0, 0, 0, 
-			0, 0, 0, 0, 
+	grid = [0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0,
 			0, 0, 0, 0 ]
+	can_move = True
 	newtile()
 	newtile()
+
+def quit_game():
+	global running
+	running = False
+
+def move_left():
+	global move, edge
+	move = -1
+	edge = [0, 4, 8, 12]
+
+def move_right():
+	global move, edge
+	move = 1
+	edge = [3, 7, 11, 15]
+
+def move_up():
+	global move, edge
+	move = -4
+	edge = [0, 1, 2, 3]
+
+def move_down():
+	global move, edge
+	move = 4
+	edge = [12, 13, 14, 15]
+
+key_action = { pygame.K_LEFT : move_left,
+		pygame.K_RIGHT : move_right,
+		pygame.K_UP : move_up,
+		pygame.K_DOWN : move_down,
+		pygame.K_r: restart,
+		pygame.K_q: quit_game,
+}
 
 restart()
 message = "Use arrow keys to move."
+running = True
 
-while not done:
+while running:
 	pressed = False
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			done = True
-		if event.type == pygame.KEYDOWN:
-			
-			if event.key == pygame.K_LEFT:
-				move = -1
-				edge = [0, 4, 8, 12]
-				pressed = True
-			if event.key == pygame.K_RIGHT:
-				move = 1
-				edge = [3, 7, 11, 15]
-				pressed = True
-			if event.key == pygame.K_UP:
-				move = -4
-				edge = [0, 1, 2, 3]
-				pressed = True
-			if event.key == pygame.K_DOWN:
-				move = 4
-				edge = [12, 13, 14, 15]
-				pressed = True
-			
-			if event.key == pygame.K_r:
-				restart()
-				continue
-			if event.key == pygame.K_q:
-				done = True
+			running = False
+		elif event.type == pygame.KEYDOWN:
+			key_action[event.key]()
+			pressed = True
+#		elif event.type == pygame.MOUSEBUTTONDOWN:
+#			if button.clicked():
+#				pass
+
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
 	screen.fill(GRAY)
 	xpos = 5
@@ -157,7 +173,7 @@ while not done:
 		xpos = 5
 		ypos += 100
 	pygame.display.flip()
-	if pressed == True:
+	if pressed and can_move:
 		changed = False
 		if move == -1 or move == -4:
 			for i in range(16):
@@ -173,14 +189,15 @@ while not done:
 				combine(i, move, edge)
 			for i in reversed(range(16)):
 				movetile(i, move, edge)
+		available = newtile()
 		if not changed:
-			if hasLost():
+			if haslost():
 				message = "Game over."
+				can_move = False
 			else:
 				message = "Invalid move"
 			continue
 		else:
 			message = ""
-		newtile()
 	clock.tick(30)
 pygame.quit()
