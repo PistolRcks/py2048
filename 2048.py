@@ -92,9 +92,15 @@ def combinable(i, move, edge):
 		if grid[i] != 0 and grid[i + move] == grid[i]:
 			return True
 
-def combine(i, move, edge): 	if combinable(i, move, edge): 		grid[i + move] =
-grid[i] + 1 		grid[i] = 0 		global score, changed 		score += 2**(grid[i + move])
-changed = True 		if grid[i + move] + 1 >= 11: 			message = "You win!"
+def combine(i, move, edge):
+	if combinable(i, move, edge):
+		grid[i + move] = grid[i] + 1
+		grid[i] = 0
+		global score, changed
+		score += 2**(grid[i + move])
+		changed = True
+		if grid[i + move] + 1 >= 11:
+			message = "You win!"
 
 def movetile(i, move, edge):
 	if moveable(i, move, edge):
