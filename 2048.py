@@ -3,14 +3,12 @@ from random import randint
 import pygame
 from button import Button
 
-
 #GUI
 button_restart = Button("restart.png", 342, 400)
 button_help = Button("help.png", 371, 400)
 
 done = False
 score = 0
-
 pygame.init()
 clock = pygame.time.Clock()
 size = (400, 430)
@@ -18,8 +16,9 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
 
+tiles = []
 
-TILES = [
+IMAGES = [
 		pygame.image.load("0.png"),
 		pygame.image.load("2.png"),
 		pygame.image.load("4.png"),
@@ -34,159 +33,177 @@ TILES = [
 		pygame.image.load("2048.png")
 		]
 
-def newtile():
-	whichTile = randint(1,10)
-	if whichTile == 10:
-		n = 2
+def newTile():
+	n = randint(1, 10)
+	if n == 10:
+		value = 2
 	else:
-		n = 1
-	empty = []
+		value = 1
+	positions = []
+	empty = reversed(range(16))
+	for i in tiles:
+		positions.append((i['ypos'] * 4) + i['xpos'])
 	for i in range(16):
-		if grid[i] == 0:
-			empty.append(i)
-	if empty == []:
-		return 0
-	new = randint(0,len(empty)-1)
-	grid[empty[new]] = n
+		if
+	empty = range(16)
+	for i in tiles:
+		empty[(i['ypos'] * 4) + i['xpos']] = -1
+	for i in empty:
+		if i == -1:
+			empty.remove(i)
+	pos = empty[randint(0, len(empty))-1]
+	xpos = pos % 4
+	ypos = (pos - xpos) / 4
+	tiles.append({'xpos': xpos, 'ypos': ypos, 'value': value})
 
 def hasLost():
-	canMove = False
-	move = -1
-	edge = [0, 4, 8, 12]
-	for i in range(16):
-		if moveable(i, move, edge) or combinable(i, move, edge):
-			canMove = True
-	move = 1
-	edge = [3, 7, 11, 15]
-	for i in range(16):
-		if moveable(i, move, edge) or combinable(i, move, edge):
-			canMove = True
-	move = -4
-	edge = [0, 1, 2, 3]
-	for i in range(16):
-		if moveable(i, move, edge) or combinable(i, move, edge):
-			canMove = True
-	move = 4
-	edge = [12, 13, 14, 15]
-	for i in range(16):
-		if moveable(i, move, edge) or combinable(i, move, edge):
-			canMove = True
-	if not canMove:
-		return True
-	else:
-		return False
+	for tile in tiles:
+		if ( movable(tile, 0,-1) or combinable(tile, 0,-1) or
+		     movable(tile, 0, 1) or combinable(tile, 0, 1) or
+			   movable(tile,-1, 0) or combinable(tile,-1, 0) or
+			   movable(tile, 1, 0) or combinable(tile, 1, 0)  ):
+			print('false')
+			return False
+	print('true')
+	return True
 
-def isEdge(i, edge):
-	if i != edge[0] and i != edge[1] and i != edge[2] and i != edge[3]:
-		return False
-	else:
+def isEdge(tile, xmove, ymove):
+	if xmove != 0:
+		 if tile['xpos'] + xmove > 3 or tile['xpos'] + xmove < 0:
+		 	return True
+	elif ymove != 0:
+		if tile['ypos'] + ymove > 3 or tile['ypos'] + ymove < 0:
+			return True
+	return False
+
+def movable(tile, xmove, ymove):
+	if not isEdge(tile, xmove, ymove):
+		for i in tiles:
+			if i['xpos'] == tile['xpos'] + xmove and i['ypos'] == tile['ypos'] + ymove:
+				return False
 		return True
 
-def moveable(i, move, edge):
-	if not isEdge(i, edge):
-		if grid[i] != 0 and grid[i + move] == 0:
-			return True
+def combinable(tile, xmove, ymove):
+	if not isEdge(tile, xmove, ymove):
+		for i in tiles:
+			if i['xpos'] == tile['xpos'] + xmove and i['ypos'] == tile['ypos'] + ymove and i['value'] == tile['value']:
+				return True
 
-def combinable(i, move, edge):
-	if not isEdge(i, edge):
-		if grid[i] != 0 and grid[i + move] == grid[i]:
-			return True
+def moveTile(tile, xmove, ymove):
+	global changed
+	while True:
+		if movable(tile, xmove, ymove):
+			tile['xpos'] += xmove
+			tile['ypos'] += ymove
+			changed = True
+		else:
+			break
+	if combinable(tile, xmove, ymove):
+		for i in tiles:
+			if i['xpos'] == tile['xpos'] + xmove and i['ypos'] == tile['ypos'] + ymove:
+				tiles.remove(tile)
+				i['value'] += 1
+				changed = True
+				global score, message
+				score += 2 ** i['value']
+				if i['value'] >= 11:
+					message = "You win!"
+	if movable(tile, xmove, ymove):
+			tile['xpos'] += xmove
+			tile['ypos'] += ymove
 
-def combine(i, move, edge): 	if combinable(i, move, edge): 		grid[i + move] =
-grid[i] + 1 		grid[i] = 0 		global score, changed 		score += 2**(grid[i + move])
-changed = True 		if grid[i + move] + 1 >= 11: 			message = "You win!"
-
-def movetile(i, move, edge):
-	if moveable(i, move, edge):
-		grid[i + move] = grid[i]
-		grid[i] = 0
-		movetile(i + move, move, edge)
-		global changed
-		changed = True
 
 def restart():
-	global message, score, grid
+	global message, score, tiles
 	message = ""
 	score = 0
-	grid = [0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0 ]
-	newtile()
-	newtile()
+	tiles = []
+	newTile()
+	newTile()
 
-def moveAll(move, edge):
-	global changed
+
+"""
+def moveAll(xmove, ymove):
+	itiles = tiles
+	if xmove == -1:
+		for i in range(4):
+			for tile in tiles:
+				if tile['xpos'] == i:
+					moveTile(tile, xmove, ymove)
+	elif ymove == -1:
+		for i in range(4):
+			for tile in tiles:
+				if tile['ypos'] == i:
+					moveTile(tile, xmove, ymove)
+	elif xmove == 1:
+		for i in reversed(range(4)):
+			for tile in tiles:
+				if tile['xpos'] == i:
+					moveTile(tile, xmove, ymove)
+	elif ymove == 1:
+		for i in reversed(range(4)):
+			for tile in tiles:
+				if tile['ypos'] == i:
+					moveTile(tile, xmove, ymove)
 	global message
-	changed = False
-	if move == -1 or move == -4:
-		for i in range(16):
-			movetile(i, move, edge)
-		for i in range(16):
-			combine(i, move, edge)
-		for i in range(16):
-			movetile(i, move, edge)
-	else:
-		for i in reversed(range(16)):
-			movetile(i, move, edge)
-		for i in reversed(range(16)):
-			combine(i, move, edge)
-		for i in reversed(range(16)):
-			movetile(i, move, edge)
-	if not changed:
+	if itiles == tiles:
 		if hasLost():
 			message = "Game over."
 		else:
-			message = "Invalid move"
+			message = "Invalid move."
 	else:
 		message = ""
-		newtile()
+		newTile()
+"""
 
 def quit_game():
 	global running
 	running = False
 
-def move_left():
-	move = -1
-	edge = [0, 4, 8, 12]
-	moveAll(move, edge)
+def moveLeft():
 
-def move_right():
-	move = 1
-	edge = [3, 7, 11, 15]
-	moveAll(move, edge)
+	for i in range(4):
+		for tile in tiles:
+			if tile['xpos'] == i:
+				moveTile(tile, -1, 0)
 
-def move_up():
-	move = -4
-	edge = [0, 1, 2, 3]
-	moveAll(move, edge)
+def moveRight():
 
-def move_down():
-	move = 4
-	edge = [12, 13, 14, 15]
-	moveAll(move, edge)
+	for i in reversed(range(4)):
+		for tile in tiles:
+			if tile['xpos'] == i:
+				moveTile(tile, 1, 0)
 
-key_action = { pygame.K_LEFT : move_left,
-		pygame.K_RIGHT : move_right,
-		pygame.K_UP : move_up,
-		pygame.K_DOWN : move_down,
+def moveUp():
+
+	for i in range(4):
+		for tile in tiles:
+			if tile['ypos'] == i:
+				moveTile(tile, 0, -1)
+
+def moveDown():
+
+	for i in reversed(range(4)):
+		for tile in tiles:
+			if tile['ypos'] == i:
+				moveTile(tile, 0, 1)
+
+key_action = {
+		pygame.K_LEFT : moveLeft,
+		pygame.K_RIGHT : moveRight,
+		pygame.K_UP : moveUp,
+		pygame.K_DOWN : moveDown,
 		pygame.K_r : restart,
 		pygame.K_q : quit_game,
 		}
 
 def redraw():
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
-	screen.fill(GRAY)
-	xpos = 5
-	ypos = 5
-	for x in range(4):
-		for i in range(4):
-			screen.blit(TILES[grid[4 * x + i]], [xpos, ypos])
-			xpos += 100
-		xpos = 5
-		ypos += 100
 	button_restart.draw(screen)
 	button_help.draw(screen)
+	screen.fill(GRAY)
+	for tile in tiles:
+		screen.blit(IMAGES[tile['value']], [tile['xpos'] * 100 + 5, tile['ypos'] * 100 + 5])
 	pygame.display.flip()
 
 restart()
@@ -200,7 +217,17 @@ while not done:
 			done = True
 		elif event.type == pygame.KEYDOWN:
 			try:
+				global changed
+				changed = False
 				key_action[event.key]()
+				if not changed:
+					if hasLost():
+						message = "Game over."
+					else:
+						message = "Invalid move."
+				else:
+					message = ""
+					newTile()
 				redraw()
 			except KeyError:
 				pass
