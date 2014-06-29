@@ -123,7 +123,6 @@ def moveAll(xmove, ymove, target):
 			if tile[target] == i:
 				combineTile(tile, xmove, ymove)
 	for i in order:
-
 		for tile in tiles:
 			if tile[target] == i:
 				moveTile(tile, xmove, ymove)
@@ -144,41 +143,6 @@ def restart():
 	tiles = []
 	newTile()
 	newTile()
-
-
-"""
-def moveAll(xmove, ymove):
-	itiles = tiles
-	if xmove == -1:
-		for i in range(4):
-			for tile in tiles:
-				if tile['xpos'] == i:
-					moveTile(tile, xmove, ymove)
-	elif ymove == -1:
-		for i in range(4):
-			for tile in tiles:
-				if tile['ypos'] == i:
-					moveTile(tile, xmove, ymove)
-	elif xmove == 1:
-		for i in reversed(range(4)):
-			for tile in tiles:
-				if tile['xpos'] == i:
-					moveTile(tile, xmove, ymove)
-	elif ymove == 1:
-		for i in reversed(range(4)):
-			for tile in tiles:
-				if tile['ypos'] == i:
-					moveTile(tile, xmove, ymove)
-	global message
-	if itiles == tiles:
-		if hasLost():
-			message = "Game over."
-		else:
-			message = "Invalid move."
-	else:
-		message = ""
-		newTile()
-"""
 
 def quit_game():
 	global running
