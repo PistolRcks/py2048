@@ -39,21 +39,21 @@ def newTile():
 		value = 2
 	else:
 		value = 1
-	positions = []
-	empty = reversed(range(16))
-	for i in tiles:
-		positions.append((i['ypos'] * 4) + i['xpos'])
+
+	grid = []
+	empty = []
 	for i in range(16):
-		if
-	empty = range(16)
+		grid.append(0)
 	for i in tiles:
-		empty[(i['ypos'] * 4) + i['xpos']] = -1
-	for i in empty:
-		if i == -1:
-			empty.remove(i)
-	pos = empty[randint(0, len(empty))-1]
+		grid[(i['ypos'] * 4) + i['xpos']] = 1
+	for i in range(16):
+		if grid[i] == 0:
+			empty.append(i)
+
+	pos = empty[randint(0, len(empty)-1)]
 	xpos = pos % 4
 	ypos = (pos - xpos) / 4
+
 	tiles.append({'xpos': xpos, 'ypos': ypos, 'value': value})
 
 def hasLost():
@@ -62,15 +62,13 @@ def hasLost():
 		     movable(tile, 0, 1) or combinable(tile, 0, 1) or
 			   movable(tile,-1, 0) or combinable(tile,-1, 0) or
 			   movable(tile, 1, 0) or combinable(tile, 1, 0)  ):
-			print('false')
 			return False
-	print('true')
 	return True
 
 def isEdge(tile, xmove, ymove):
 	if xmove != 0:
-		 if tile['xpos'] + xmove > 3 or tile['xpos'] + xmove < 0:
-		 	return True
+		if tile['xpos'] + xmove > 3 or tile['xpos'] + xmove < 0:
+			return True
 	elif ymove != 0:
 		if tile['ypos'] + ymove > 3 or tile['ypos'] + ymove < 0:
 			return True
@@ -84,34 +82,60 @@ def movable(tile, xmove, ymove):
 		return True
 
 def combinable(tile, xmove, ymove):
-	if not isEdge(tile, xmove, ymove):
+	#if not isEdge(tile, xmove, ymove):
 		for i in tiles:
 			if i['xpos'] == tile['xpos'] + xmove and i['ypos'] == tile['ypos'] + ymove and i['value'] == tile['value']:
 				return True
-
-def moveTile(tile, xmove, ymove):
-	global changed
-	while True:
-		if movable(tile, xmove, ymove):
-			tile['xpos'] += xmove
-			tile['ypos'] += ymove
-			changed = True
-		else:
-			break
+def combineTile(tile, xmove, ymove):
 	if combinable(tile, xmove, ymove):
 		for i in tiles:
 			if i['xpos'] == tile['xpos'] + xmove and i['ypos'] == tile['ypos'] + ymove:
 				tiles.remove(tile)
 				i['value'] += 1
+				global score, message, changed
 				changed = True
-				global score, message
 				score += 2 ** i['value']
 				if i['value'] >= 11:
 					message = "You win!"
-	if movable(tile, xmove, ymove):
+def moveTile(tile, xmove, ymove):
+	while True:
+		if movable(tile, xmove, ymove):
 			tile['xpos'] += xmove
 			tile['ypos'] += ymove
+			global changed
+			changed = True
+		else:
+			break
 
+def moveAll(xmove, ymove, target):
+	global changed
+	changed = False
+	if xmove == 1 or ymove == 1:
+		order = [3, 2, 1, 0]
+	else:
+		order = [0, 1, 2, 3]
+	for i in order:
+		for tile in tiles:
+			if tile[target] == i:
+				moveTile(tile, xmove, ymove)
+	for i in order:
+		for tile in tiles:
+			if tile[target] == i:
+				combineTile(tile, xmove, ymove)
+	for i in order:
+
+		for tile in tiles:
+			if tile[target] == i:
+				moveTile(tile, xmove, ymove)
+	global message
+	if len(tiles) == 16:
+		if hasLost():
+			message = "Game over"
+	elif not changed:
+		message = "Invalid move."
+	else:
+		message = ""
+		newTile()
 
 def restart():
 	global message, score, tiles
@@ -161,32 +185,16 @@ def quit_game():
 	running = False
 
 def moveLeft():
-
-	for i in range(4):
-		for tile in tiles:
-			if tile['xpos'] == i:
-				moveTile(tile, -1, 0)
+	moveAll(-1, 0, 'xpos')
 
 def moveRight():
-
-	for i in reversed(range(4)):
-		for tile in tiles:
-			if tile['xpos'] == i:
-				moveTile(tile, 1, 0)
+	moveAll(1, 0, 'xpos')
 
 def moveUp():
-
-	for i in range(4):
-		for tile in tiles:
-			if tile['ypos'] == i:
-				moveTile(tile, 0, -1)
+	moveAll(0, -1, 'ypos')
 
 def moveDown():
-
-	for i in reversed(range(4)):
-		for tile in tiles:
-			if tile['ypos'] == i:
-				moveTile(tile, 0, 1)
+	moveAll(0, 1, 'ypos')
 
 key_action = {
 		pygame.K_LEFT : moveLeft,
@@ -199,12 +207,13 @@ key_action = {
 
 def redraw():
 	pygame.display.set_caption("Score: "+str(score)+"        "+message)
+	screen.fill(GRAY)
 	button_restart.draw(screen)
 	button_help.draw(screen)
-	screen.fill(GRAY)
 	for tile in tiles:
 		screen.blit(IMAGES[tile['value']], [tile['xpos'] * 100 + 5, tile['ypos'] * 100 + 5])
 	pygame.display.flip()
+
 
 restart()
 message = "Use arrow keys to move."
@@ -220,14 +229,6 @@ while not done:
 				global changed
 				changed = False
 				key_action[event.key]()
-				if not changed:
-					if hasLost():
-						message = "Game over."
-					else:
-						message = "Invalid move."
-				else:
-					message = ""
-					newTile()
 				redraw()
 			except KeyError:
 				pass
