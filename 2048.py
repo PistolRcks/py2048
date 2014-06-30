@@ -144,9 +144,9 @@ def restart():
 	newTile()
 	newTile()
 
-def quit_game():
-	global running
-	running = False
+def quitGame():
+	global done
+	done = True
 
 def moveLeft():
 	moveAll(-1, 0, 'xpos')
@@ -166,7 +166,7 @@ key_action = {
 		pygame.K_UP : moveUp,
 		pygame.K_DOWN : moveDown,
 		pygame.K_r : restart,
-		pygame.K_q : quit_game,
+		pygame.K_q : quitGame,
 		}
 
 def redraw():
