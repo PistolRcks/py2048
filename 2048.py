@@ -129,15 +129,15 @@ def initAnimation(tile, xmove, ymove):
 	if tile['grid_x'] * 100 + 5 == tile['draw_x']:
 		tile['change_x'] = 0
 	else:
-		tile['change_x'] = math.fabs(tile['draw_x'] - tile['grid_x'] * 100 + 5) / 15 * xmove
+		tile['change_x'] = math.fabs(tile['draw_x'] - (tile['grid_x'] * 100 + 5)) / 15 * xmove
 	if tile['grid_y'] * 100 + 5 == tile['draw_y']:
 		tile['change_y'] = 0
 	else:
-		tile['change_y'] = math.fabs(tile['draw_y'] - tile['grid_y'] * 100 + 5) / 15 * ymove
+		tile['change_y'] = math.fabs(tile['draw_y'] - (tile['grid_y'] * 100 + 5)) / 15 * ymove
 def animate():
 	global animating, frame
 	frame += 1
-	if frame <= 15:
+	if frame < 15:
 		for tile in tiles:
 			tile['draw_x'] += tile['change_x']
 			tile['draw_y'] += tile['change_y']
@@ -166,8 +166,7 @@ def moveAll(xmove, ymove, target):
 				moveTile(tile, xmove, ymove)
 	for i in order:
 		for tile in tiles:
-			if tile[target] == i:
-				initAnimation(tile, xmove, ymove)
+			initAnimation(tile, xmove, ymove)
 	global message
 	if len(tiles) == 16:
 		if hasLost():
@@ -250,5 +249,5 @@ if __name__ == "__main__":
 					elif button_help.clicked():
 						message = "Use arrow keys to move."
 
-		clock.tick(30)
+		clock.tick(60)
 	pygame.quit()
