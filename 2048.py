@@ -1,8 +1,8 @@
 #!/usr/bin/python
 from random import randint
+from math import fabs
 import pygame
 from button import Button
-import math
 
 #GUI
 button_restart = Button("restart.png", 342, 400)
@@ -129,15 +129,15 @@ def initAnimation(tile, xmove, ymove):
 	if tile['grid_x'] * 100 + 5 == tile['draw_x']:
 		tile['change_x'] = 0
 	else:
-		tile['change_x'] = math.fabs(tile['draw_x'] - (tile['grid_x'] * 100 + 5)) / 15 * xmove
+		tile['change_x'] = fabs(tile['draw_x'] - (tile['grid_x'] * 100 + 5)) / 10 * xmove
 	if tile['grid_y'] * 100 + 5 == tile['draw_y']:
 		tile['change_y'] = 0
 	else:
-		tile['change_y'] = math.fabs(tile['draw_y'] - (tile['grid_y'] * 100 + 5)) / 15 * ymove
+		tile['change_y'] = fabs(tile['draw_y'] - (tile['grid_y'] * 100 + 5)) / 10 * ymove
 def animate():
 	global animating, frame
 	frame += 1
-	if frame < 15:
+	if frame <= 10:
 		for tile in tiles:
 			tile['draw_x'] += tile['change_x']
 			tile['draw_y'] += tile['change_y']
@@ -249,5 +249,5 @@ if __name__ == "__main__":
 					elif button_help.clicked():
 						message = "Use arrow keys to move."
 
-		clock.tick(60)
+		clock.tick(120)
 	pygame.quit()
