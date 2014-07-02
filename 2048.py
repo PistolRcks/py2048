@@ -12,6 +12,7 @@ done = False
 animating = False
 frame = 0
 score = 0
+message = ""
 pygame.init()
 clock = pygame.time.Clock()
 size = (400, 430)
@@ -117,11 +118,6 @@ def moveTile(tile, xmove, ymove):
 			changed = True
 		else:
 			break
-
-# TODO: use this easing function in the animation
-#def easeInQuad(time, start, change, duration):
-#	time /= duration
-#	return change * time * time + start
 
 def initAnimation(tile, xmove, ymove):
 	global animating
@@ -248,6 +244,7 @@ if __name__ == "__main__":
 						redraw()
 					elif button_help.clicked():
 						message = "Use arrow keys to move."
+						redraw()
 
 		clock.tick(120)
 	pygame.quit()
