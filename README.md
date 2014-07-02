@@ -24,11 +24,10 @@ Fedora: `sudo yum install python pygame`
 
 [Python 2.7](https://www.python.org/ftp/python/2.7.7/python-2.7.7.msi),
 [pygame](http://pygame.org/ftp/pygame-1.9.1.win32-py2.7.msi)
+(direct download)
 
-**NOTE:** Since pygame only comes in 32-bit, you need the 32-bit version of
-Python 2.7 also. This is because the installer for pygame will not detect a
-64-bit installation of Python 2.7 since it is not compatible. I know, I've
-tried.
+**NOTE:** Since pygame only comes in 32-bit, the linked version of Python is
+also 32-bit. A 64-bit installation of Python will not work with pygame.
 
 
 ### MAC OS X
@@ -38,11 +37,11 @@ one could install
 [Python 2.7](https://www.python.org/ftp/python/2.7.7/python-2.7.7-macosx10.3.dmg)
 and
 [pygame](http://pygame.org/ftp/pygame-1.9.1release-python.org-32bit-py2.7-macosx10.3.dmg)
-on the Mac, it should run. The game does not include any OS-specific code. The
-same thing applies to Mac as it does to Windows; you need the 32-bit version of
-Python, as pygame only comes in 32-bit. One could also download dependencies via
-MacPorts.
+(direct download) on the Mac, it should run. The game does not include any
+OS-specific code. The same thing applies to Mac as it does to Windows; you need
+the 32-bit version of Python, as pygame only comes in 32-bit. One could also
+download dependencies via MacPorts.
 
 The download page for Python 2.7.7 is
 [here](https://www.python.org/download/releases/2.7.7/)
-just in case I included the wrong one.
+just in case I linked to the wrong one.
