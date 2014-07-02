@@ -11,7 +11,7 @@ Dependencies
 
 You may not have to install Python, as it is installed by default with most
 Linux distros. However, if for some reason you do not have Python 2.7, package
-names are included below.
+names are included below along with pygame.
 
 Arch: `sudo pacman -Sy python2 python2-pygame`
 
@@ -42,3 +42,7 @@ on the Mac, it should run. The game does not include any OS-specific code. The
 same thing applies to Mac as it does to Windows; you need the 32-bit version of
 Python, as pygame only comes in 32-bit. One could also download dependencies via
 MacPorts.
+
+The download page for Python 2.7.7 is
+[here](https://www.python.org/download/releases/2.7.7/)
+just in case I included the wrong one.
