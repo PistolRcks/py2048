@@ -62,10 +62,12 @@ def newTile():
 			'grid_x' : xpos,
 			'grid_y' : ypos,
 			'value' : value,
+			'target' : value,
 			'draw_x' : xpos * 100 + 5,
 			'draw_y' : ypos * 100 + 5,
 			'change_x' : 0,
-			'change_y' : 0
+			'change_y' : 0,
+			'remove' : False
 			})
 
 def hasLost():
@@ -98,17 +100,22 @@ def combinable(tile, xmove, ymove):
 		for i in tiles:
 			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove and i['value'] == tile['value']:
 				return True
+
 def combineTile(tile, xmove, ymove):
 	if combinable(tile, xmove, ymove):
 		for i in tiles:
 			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove:
-				tiles.remove(tile)
-				i['value'] += 1
+				#tiles.remove(tile)
+				tile['remove'] = True
+				tile['grid_x'] += xmove
+				tile['grid_y'] += ymove
+				i['target'] += 1
 				global score, message, changed
 				changed = True
-				score += 2 ** i['value']
-				if i['value'] >= 11:
+				score += 2 ** i['target']
+				if i['target'] >= 11:
 					message = "You win!"
+
 def moveTile(tile, xmove, ymove):
 	while True:
 		if movable(tile, xmove, ymove):
@@ -130,6 +137,7 @@ def initAnimation(tile, xmove, ymove):
 		tile['change_y'] = 0
 	else:
 		tile['change_y'] = fabs(tile['draw_y'] - (tile['grid_y'] * 100 + 5)) / 10 * ymove
+
 def animate():
 	global animating, frame
 	frame += 1
@@ -140,6 +148,10 @@ def animate():
 	else:
 		animating = False
 		frame = 0
+		for tile in tiles:
+			tile['value'] = tile['target']
+			if tile['remove'] == True:
+				tiles.remove(tile)
 
 def moveAll(xmove, ymove, target):
 	global changed
