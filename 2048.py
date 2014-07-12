@@ -49,7 +49,7 @@ def newTile():
 	for i in range(16):
 		grid.append(0)
 	for i in tiles:
-		grid[(i['grid_x'] * 4) + i['grid_y']] = 1
+		grid[i['grid_x'] + (i['grid_y'] * 4)] = 1
 	for i in range(16):
 		if grid[i] == 0:
 			empty.append(i)
@@ -172,9 +172,8 @@ def moveAll(xmove, ymove, target):
 		for tile in tiles:
 			if tile[target] == i:
 				moveTile(tile, xmove, ymove)
-	for i in order:
-		for tile in tiles:
-			initAnimation(tile, xmove, ymove)
+	for tile in tiles:
+		initAnimation(tile, xmove, ymove)
 	global message
 	if len(tiles) == 16:
 		if hasLost():
