@@ -1,6 +1,5 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 from random import randint
-from math import fabs
 import pygame
 from button import Button
 
@@ -9,15 +8,12 @@ button_restart = Button("restart.png", 342, 400)
 button_help = Button("help.png", 371, 400)
 
 done = False
-animating = False
-frame = 0
 score = 0
 message = ""
 pygame.init()
 clock = pygame.time.Clock()
 size = (400, 430)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("2048")
 GRAY = (150, 150, 150)
 
 tiles = []
@@ -37,6 +33,19 @@ IMAGES = [
 		pygame.image.load("2048.png")
 		]
 
+#For debugging. 
+“””   
+def putTile(xpos, ypos, value):
+	tiles.append({
+			'grid_x' : xpos,
+			'grid_y' : ypos,
+			'value' : value,
+			'draw_x' : xpos * 100 + 5,
+			'draw_y' : ypos * 100 + 5,
+			'change_x' : 0,
+			'change_y' : 0
+			})
+“””
 def newTile():
 	n = randint(1, 10)
 	if n == 10:
@@ -49,7 +58,7 @@ def newTile():
 	for i in range(16):
 		grid.append(0)
 	for i in tiles:
-		grid[i['grid_x'] + (i['grid_y'] * 4)] = 1
+		grid[(i['grid_y'] * 4) + i['grid_x']] = 1
 	for i in range(16):
 		if grid[i] == 0:
 			empty.append(i)
@@ -62,12 +71,10 @@ def newTile():
 			'grid_x' : xpos,
 			'grid_y' : ypos,
 			'value' : value,
-			'target' : value,
 			'draw_x' : xpos * 100 + 5,
 			'draw_y' : ypos * 100 + 5,
 			'change_x' : 0,
-			'change_y' : 0,
-			'remove' : False
+			'change_y' : 0
 			})
 
 def hasLost():
@@ -96,66 +103,49 @@ def movable(tile, xmove, ymove):
 		return True
 
 def combinable(tile, xmove, ymove):
-	#if not isEdge(tile, xmove, ymove):
+	if not isEdge(tile, xmove, ymove):
 		for i in tiles:
 			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove and i['value'] == tile['value']:
 				return True
-
 def combineTile(tile, xmove, ymove):
 	if combinable(tile, xmove, ymove):
 		for i in tiles:
 			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove:
-				#tiles.remove(tile)
-				tile['remove'] = True
+				tiles.remove(i)
+				tile['change_x'] += xmove
+				tile['change_y'] += ymove
 				tile['grid_x'] += xmove
 				tile['grid_y'] += ymove
-				i['target'] += 1
-				global score, message, changed
-				changed = True
-				score += 2 ** i['target']
-				if i['target'] >= 11:
+				tile['value'] += 1
+				global score, message
+				score += 2 ** tile['value']
+				if tile['value'] >= 11:
 					message = "You win!"
-
 def moveTile(tile, xmove, ymove):
 	while True:
 		if movable(tile, xmove, ymove):
 			tile['grid_x'] += xmove
 			tile['grid_y'] += ymove
-			global changed
-			changed = True
+			tile['change_x'] += xmove
+			tile['change_y'] += ymove
 		else:
 			break
-
-def initAnimation(tile, xmove, ymove):
-	global animating
-	animating = True
-	if tile['grid_x'] * 100 + 5 == tile['draw_x']:
-		tile['change_x'] = 0
-	else:
-		tile['change_x'] = fabs(tile['draw_x'] - (tile['grid_x'] * 100 + 5)) / 10 * xmove
-	if tile['grid_y'] * 100 + 5 == tile['draw_y']:
-		tile['change_y'] = 0
-	else:
-		tile['change_y'] = fabs(tile['draw_y'] - (tile['grid_y'] * 100 + 5)) / 10 * ymove
-
+def changed():
+	for tile in tiles:
+		if tile['change_x'] != 0 or tile['change_y'] != 0:
+			return True
+	return False
 def animate():
-	global animating, frame
-	frame += 1
-	if frame <= 10:
+	for i in range(10):
 		for tile in tiles:
-			tile['draw_x'] += tile['change_x']
-			tile['draw_y'] += tile['change_y']
-	else:
-		animating = False
-		frame = 0
-		for tile in tiles:
-			tile['value'] = tile['target']
-			if tile['remove'] == True:
-				tiles.remove(tile)
-
+			tile['draw_x'] += tile['change_x'] * 10
+			tile['draw_y'] += tile['change_y'] * 10
+		redraw()
+		clock.tick(60)
 def moveAll(xmove, ymove, target):
-	global changed
-	changed = False
+	for tile in tiles:
+		tile['change_x'] = 0
+		tile['change_y'] = 0
 	if xmove == 1 or ymove == 1:
 		order = [3, 2, 1, 0]
 	else:
@@ -172,18 +162,6 @@ def moveAll(xmove, ymove, target):
 		for tile in tiles:
 			if tile[target] == i:
 				moveTile(tile, xmove, ymove)
-	for tile in tiles:
-		initAnimation(tile, xmove, ymove)
-	global message
-	if len(tiles) == 16:
-		if hasLost():
-			message = "Game over"
-	elif not changed:
-		message = "Invalid move."
-	else:
-		message = ""
-		newTile()
-
 def restart():
 	global message, score, tiles
 	message = ""
@@ -191,6 +169,8 @@ def restart():
 	tiles = []
 	newTile()
 	newTile()
+
+
 
 def quitGame():
 	global done
@@ -232,30 +212,31 @@ if __name__ == "__main__":
 	redraw()
 
 	while not done:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				done = True
+			elif event.type == pygame.KEYDOWN:
+				try:
+					key_action[event.key]()
+					animate()
+					if len(tiles) == 16:
+						if hasLost():
+							message = "Game over"
+					elif not changed():
+						message = "Invalid move."
+					else:
+						message = ""
+						newTile()
+					redraw()
+				except KeyError:
+					pass
+			elif event.type == pygame.MOUSEBUTTONDOWN:
+				if button_restart.clicked():
+					restart()
+					redraw()
+				elif button_help.clicked():
+					message = "Use arrow keys to move."
+					redraw()
 
-		if animating:
-			animate()
-			redraw()
-		else:
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					done = True
-				elif event.type == pygame.KEYDOWN:
-					try:
-						global changed
-						changed = False
-						key_action[event.key]()
-						animate()
-						redraw()
-					except KeyError:
-						pass
-				elif event.type == pygame.MOUSEBUTTONDOWN:
-					if button_restart.clicked():
-						restart()
-						redraw()
-					elif button_help.clicked():
-						message = "Use arrow keys to move."
-						redraw()
-
-		clock.tick(120)
+		clock.tick(10)
 	pygame.quit()
