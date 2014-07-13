@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python
+#!/usr/bin/python
 from random import randint
 import pygame
 from button import Button
@@ -33,8 +33,8 @@ IMAGES = [
 		pygame.image.load("2048.png")
 		]
 
-#For debugging. 
-“””   
+#For debugging.
+"""
 def putTile(xpos, ypos, value):
 	tiles.append({
 			'grid_x' : xpos,
@@ -45,7 +45,7 @@ def putTile(xpos, ypos, value):
 			'change_x' : 0,
 			'change_y' : 0
 			})
-“””
+"""
 def newTile():
 	n = randint(1, 10)
 	if n == 10:
