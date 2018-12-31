@@ -45,3 +45,6 @@ download dependencies via MacPorts.
 The download page for Python 2.7.7 is
 [here](https://www.python.org/download/releases/2.7.7/)
 just in case I linked to the wrong one.
+
+## Extra Feature(s)
+Press `A` to initiate "Auto Mode!" Watch as the game plays itself for you!
