@@ -15,6 +15,7 @@ clock = pygame.time.Clock()
 size = (400, 430)
 screen = pygame.display.set_mode(size)
 GRAY = (150, 150, 150)
+auto = False
 
 tiles = []
 
@@ -31,7 +32,7 @@ IMAGES = [
 		pygame.image.load("512.png"),
 		pygame.image.load("1024.png"),
 		pygame.image.load("2048.png")
-		]
+]
 
 #For debugging.
 """
@@ -49,20 +50,20 @@ def putTile(xpos, ypos, value):
 def newTile():
 	n = randint(1, 10)
 	if n == 10:
-		value = 2
+		value = 2 #There's a 1/10 chance that the new tile will be a 4 instead of a 2
 	else:
 		value = 1
 
+	#Check if there are any empty spaces
 	grid = []
 	empty = []
-	for i in range(16):
+	for i in range(16): #Fill the grid with zeroes
 		grid.append(0)
-	for i in tiles:
+	for i in tiles: #Tiles which exist will be changed to 1 in the grid table
 		grid[(i['grid_y'] * 4) + i['grid_x']] = 1
 	for i in range(16):
-		if grid[i] == 0:
+		if grid[i] == 0: #Rows which are zero can be appended to the list of empty slots
 			empty.append(i)
-
 	pos = empty[randint(0, len(empty)-1)]
 	xpos = pos % 4
 	ypos = (pos - xpos) / 4
@@ -108,19 +109,18 @@ def combinable(tile, xmove, ymove):
 			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove and i['value'] == tile['value']:
 				return True
 def combineTile(tile, xmove, ymove):
-	if combinable(tile, xmove, ymove):
-		for i in tiles:
-			if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove:
-				tiles.remove(i)
-				tile['change_x'] += xmove
-				tile['change_y'] += ymove
-				tile['grid_x'] += xmove
-				tile['grid_y'] += ymove
-				tile['value'] += 1
-				global score, message
-				score += 2 ** tile['value']
-				if tile['value'] >= 11:
-					message = "You win!"
+	for i in tiles:
+		if i['grid_x'] == tile['grid_x'] + xmove and i['grid_y'] == tile['grid_y'] + ymove and combinable(tile, xmove, ymove):
+			tiles.remove(i)
+			tile['change_x'] += xmove
+			tile['change_y'] += ymove
+			tile['grid_x'] += xmove
+			tile['grid_y'] += ymove
+			tile['value'] += 1
+			global score, message
+			score += 2 ** tile['value']
+			if tile['value'] >= 11:
+				message = "You win!"
 def moveTile(tile, xmove, ymove):
 	while True:
 		if movable(tile, xmove, ymove):
@@ -188,6 +188,28 @@ def moveUp():
 def moveDown():
 	moveAll(0, 1, 'grid_y')
 
+def autoPlay(): #Random automatic 2048! Partially for debugging, partially for fun
+	if auto and not hasLost():
+		dir = [moveUp, moveRight, moveLeft, moveDown]
+		choices = []
+		allowed = [0,0,0,0]
+		for tile in tiles:
+			if movable(tile, 0, -1) or combinable(tile, 0, -1): #Check if we can move (or combine) every tile up
+				allowed[0] += 1 #If so, add one to the list of allowed directions (in that direction)
+			if movable(tile, 1, 0) or combinable(tile, 1, 0): #Same goes for right
+				allowed[1] += 1
+			if movable(tile, 0, 1) or combinable(tile, 0, 1): #Same goes for down
+				allowed[2] += 1
+			if movable(tile, -1, 0) or combinable(tile, -1, 0): #Same goes for left
+				allowed[3] += 1
+		for i in range(4):
+			if allowed[i-1] is not len(tiles): #If all tiles can move in a certain direction, append it to the list of possible directions
+			 	choices.append(dir[i-1])
+		dir[randint(1,len(choices))-1]() #Get a random choice from all of the possible directions and move in that direction
+def autoSwitch():
+	global auto
+	auto = not auto
+
 key_action = {
 		pygame.K_LEFT : moveLeft,
 		pygame.K_RIGHT : moveRight,
@@ -195,6 +217,7 @@ key_action = {
 		pygame.K_DOWN : moveDown,
 		pygame.K_r : restart,
 		pygame.K_q : quitGame,
+		pygame.K_a : autoSwitch,
 		}
 
 def redraw():
@@ -212,31 +235,46 @@ if __name__ == "__main__":
 	redraw()
 
 	while not done:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				done = True
-			elif event.type == pygame.KEYDOWN:
-				try:
-					key_action[event.key]()
-					animate()
-					if len(tiles) == 16:
-						if hasLost():
-							message = "Game over"
-					elif not changed():
-						message = "Invalid move."
-					else:
-						message = ""
-						newTile()
-					redraw()
-				except KeyError:
-					pass
-			elif event.type == pygame.MOUSEBUTTONDOWN:
-				if button_restart.clicked():
-					restart()
-					redraw()
-				elif button_help.clicked():
-					message = "Use arrow keys to move."
-					redraw()
+		if auto:
+			autoPlay()
+			message = "Auto is on."
+			animate()
+			if len(tiles) == 16:
+				if hasLost():
+					message = "Game over"
+					auto = False
+					print("List of tiles is: ")
+					for tile in tiles:
+						print("In pos ["+str(tile["grid_x"])+","+str(tile["grid_y"])+"] with value of "+str(2**tile["value"]))
+			elif changed():
+				newTile()
+			redraw()
+		else:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					done = True
+				elif event.type == pygame.KEYDOWN or auto:
+					try:
+						key_action[event.key]()
+						animate()
+						if len(tiles) == 16:
+							if hasLost():
+								message = "Game over"
+						elif not changed():
+							message = "Invalid move."
+						else:
+							message = ""
+							newTile()
+						redraw()
+					except KeyError:
+						pass
+				elif event.type == pygame.MOUSEBUTTONDOWN:
+					if button_restart.clickable():
+						restart()
+						redraw()
+					elif button_help.clickable():
+						message = "Use arrow keys to move."
+						redraw()
 
 		clock.tick(10)
 	pygame.quit()
