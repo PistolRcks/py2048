@@ -9,7 +9,6 @@ button_restart = Button("restart.png", 342, 400)
 button_help = Button("help.png", 371, 400)
 
 done = False
-score = 0
 message = ""
 pygame.init()
 clock = pygame.time.Clock()
@@ -97,7 +96,7 @@ def draw_tile(x, y, scale):
 
 def draw(direction):
     global animate_percentage
-    pygame.display.set_caption("Score: " + str(score) + "        " + message)
+    pygame.display.set_caption("Score: " + str(board.score) + "        " + message)
     screen.fill(GRAY)
     button_restart.draw(screen)
     button_help.draw(screen)
