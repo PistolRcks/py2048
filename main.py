@@ -49,7 +49,7 @@ def quitGame():
     done = True
 
 def move(direction):
-    global animate_percentage, old_grid
+    global animate_percentage, old_grid, last_direction
     animate_percentage = 0
     old_grid = copy(board)
     if board.move(direction):
@@ -87,12 +87,12 @@ key_action = {
     pygame.K_a : autoSwitch,
 }
 
-def draw_tile(x, y, scale):
+def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
     screen.blit(
             pygame.transform.scale(
                 IMAGES[board.get(x, y)],
                 (scale * 90 / 100, scale * 90 / 100)),
-            (x * 100 + .5 * (100 - scale) + 5, y * 100 + (.5 * (100 - scale) + 5)))
+            ((x * 100 + .5 * (100 - scale) + 5) + offsetx, (y * 100 + (.5 * (100 - scale) + 5)) + offsety))
 
 def draw(direction):
     global animate_percentage
@@ -103,9 +103,9 @@ def draw(direction):
     changed = board
     ranges = {
         'left': range(board.width),
-        'right': reversed(range(board.width)),
+        'right': range(board.width),
         'up': range(board.height),
-        'down': reversed(range(board.height)),
+        'down': range(board.height),
     }
 
     if direction == 'left' or direction == 'right':
@@ -114,22 +114,27 @@ def draw(direction):
             for x in ranges[direction]:
                 if board.get(x, y) != old_grid[y * board.width + x]:
                     animated = True
-                if animated:
-                    draw_tile(x, y, animate_percentage)
-                else:
-                    draw_tile(x, y, 100)
+                if animated and board.get(x, y) != 0:
+                    if direction == 'left':
+                        draw_tile(x, y, 1 * (100 - animate_percentage), 0, animate_percentage)
+                    else:
+                        draw_tile(x, y, -(1 * (100 - animate_percentage)), 0, animate_percentage)
+                elif board.get(x, y) != 0:
+                    draw_tile(x, y)
     else:
         for x in range(board.width):
             animated = False
             for y in ranges[direction]:
-                if board.get(x, y) != old_grid[y * board.width + x] and animate_percentage < 100:
+                if board.get(x, y) != old_grid[y * board.width + x]:
                     animated = True
-                if animated:
-                    draw_tile(x, y, animate_percentage)
-                else:
-                    draw_tile(x, y, 100)
-
-    animate_percentage += 12
+                if animated and board.get(x, y) != 0:
+                    if direction == 'up':
+                        draw_tile(x, y, 0, 1 * (100 - animate_percentage), animate_percentage)
+                    else:
+                        draw_tile(x, y, 0, -(1 * (100 - animate_percentage)), animate_percentage)
+                elif board.get(x, y) != 0:
+                    draw_tile(x, y)
+    animate_percentage = min(100, animate_percentage + 12)
     pygame.display.flip()
 
 if __name__ == "__main__":
@@ -152,8 +157,9 @@ if __name__ == "__main__":
                     message = "Use arrow keys to move."
 
         if auto:
-            autoPlay()
-            message = "Auto is on."
+            if animate_percentage >= 100:
+                autoPlay()
+                message = "Auto is on."
         draw(last_direction)
         clock.tick(60)
     pygame.quit()
