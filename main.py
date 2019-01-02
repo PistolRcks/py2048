@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 import random
 import pygame
 from button import Button
@@ -64,7 +64,7 @@ def move_down(): move('down')
 
 def autoPlay(): #Random automatic 2048! Partially for debugging, partially for fun
     if auto:
-        directions = [moveUp, moveRight, moveLeft, moveDown]
+        directions = [move_up, move_right, move_left, move_down]
         random.choice(directions)()
 
 def autoSwitch():
