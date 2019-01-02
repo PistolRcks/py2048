@@ -70,6 +70,13 @@ def autoSwitch():
     global auto
     auto = not auto
 
+auto_disallowed_keys = [
+    pygame.K_LEFT,
+    pygame.K_RIGHT,
+    pygame.K_UP,
+    pygame.K_DOWN
+]
+
 def restart():
     global board
     board = Board(4, 4)
@@ -116,9 +123,9 @@ def draw(direction):
                     animated = True
                 if animated and board.get(x, y) != 0:
                     if direction == 'left':
-                        draw_tile(x, y, 1 * (100 - animate_percentage), 0, animate_percentage)
+                        draw_tile(x, y, 1 * (100 - animate_percentage), 0, max(animate_percentage, 50))
                     else:
-                        draw_tile(x, y, -(1 * (100 - animate_percentage)), 0, animate_percentage)
+                        draw_tile(x, y, -(1 * (100 - animate_percentage)), 0, max(animate_percentage, 50))
                 elif board.get(x, y) != 0:
                     draw_tile(x, y)
     else:
@@ -129,12 +136,12 @@ def draw(direction):
                     animated = True
                 if animated and board.get(x, y) != 0:
                     if direction == 'up':
-                        draw_tile(x, y, 0, 1 * (100 - animate_percentage), animate_percentage)
+                        draw_tile(x, y, 0, 1 * (100 - animate_percentage), max(animate_percentage, 50))
                     else:
-                        draw_tile(x, y, 0, -(1 * (100 - animate_percentage)), animate_percentage)
+                        draw_tile(x, y, 0, -(1 * (100 - animate_percentage)), max(animate_percentage, 50))
                 elif board.get(x, y) != 0:
                     draw_tile(x, y)
-    animate_percentage = min(100, animate_percentage + 12)
+    animate_percentage = min(100, animate_percentage + 12) #Make sure that the animation percentage doesn't go above 100
     pygame.display.flip()
 
 if __name__ == "__main__":
@@ -147,7 +154,11 @@ if __name__ == "__main__":
                 done = True
             elif event.type == pygame.KEYDOWN:
                 try:
-                    key_action[event.key]()
+                    if auto and not event.key in auto_disallowed_keys:
+                        #Don't allow movement while auto is on
+                        key_action[event.key]()
+                    elif not auto:
+                        key_action[event.key]()
                 except KeyError:
                     pass
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -156,10 +167,9 @@ if __name__ == "__main__":
                 elif button_help.clickable():
                     message = "Use arrow keys to move."
 
-        if auto:
-            if animate_percentage >= 100:
-                autoPlay()
-                message = "Auto is on."
+        if auto and animate_percentage >= 100:
+            autoPlay()
+            message = "Auto is on."
         draw(last_direction)
         clock.tick(60)
     pygame.quit()
