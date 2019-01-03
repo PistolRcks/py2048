@@ -47,4 +47,11 @@ The download page for Python 2.7.7 is
 just in case I linked to the wrong one.
 
 ## Extra Feature(s)
+You can change the size of the playfield by inputting two numbers as arguments on the command line.
+This is optional. However, both must be present to affect the size.
+
+USAGE:
+
+    python main.py [board_width] [board_height]
+
 Press `A` to initiate "Auto Mode!" Watch as the game plays itself for you!

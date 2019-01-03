@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 import random
 import pygame
+import sys
 import pygame.freetype
 import pygame.gfxdraw
 from button import Button
@@ -17,9 +18,19 @@ clock = pygame.time.Clock()
 size = (400, 430)
 screen = pygame.display.set_mode(size)
 auto = False
-board = Board(4, 4)
 animate_percentage = 0
 last_direction = 'up'
+
+# Board Logic
+#Allow for command-line arguments of board height and board width (4 being default)
+#Both arguments need to be filled or else something breaks when you try to move
+try: boardw, boardh = int(sys.argv[1]), int(sys.argv[2])
+except: boardw, boardh = 4, 4
+board = Board(boardw, boardh)
+#The tile size should scale based on the larger of the board's width or height
+#(to ensure that nothing goes off of the screen)
+#NB: 4 is the default.
+scale_factor = 4./max(board.width, board.height)
 
 # Creates a copy of the board's grid so that it can be compared against a later version
 def copy(board):
@@ -83,7 +94,7 @@ auto_disallowed_keys = [
 
 def restart():
     global board
-    board = Board(4, 4)
+    board = Board(boardh, boardw)
     old_grid = copy(board)
     board.new_tile()
     board.new_tile()
@@ -105,7 +116,7 @@ SCALE = 200
 
 
 def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
-
+    local_scale = int(scale * scale_factor) #The scale for individual tiles is affected by the main scale factor
     padding = int(SCALE / 20)
     width = SCALE + padding
     height = SCALE + padding
@@ -143,8 +154,8 @@ def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
     screen.blit(
             pygame.transform.smoothscale(
                 rounded_rect,
-                (scale * 90 / 100, scale * 90 / 100)),
-            ((x * 100 + .5 * (100 - scale) + 5) + offsetx, (y * 100 + (.5 * (100 - scale) + 5)) + offsety))
+                (local_scale * 90 / 100, local_scale * 90 / 100)),
+            (((x * 100 + .5 * ((100 - scale) * scale_factor) + 5) + offsetx) * scale_factor, ((y * 100 + .5 * ((100 - scale) * scale_factor) + 5) + offsety) * scale_factor))
 
 def draw(direction):
     global animate_percentage
