@@ -20,7 +20,7 @@ auto = False
 animate_percentage = 0
 last_direction = 'up'
 
-#Board Logic
+# Board Logic
 #Allow for command-line arguments of board height and board width (4 being default)
 #Both arguments need to be filled or else something breaks when you try to move
 try: boardw, boardh = int(sys.argv[1]), int(sys.argv[2])
@@ -106,7 +106,6 @@ key_action = {
 }
 
 def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
-    global scale_factor
     local_scale = int(scale * scale_factor) #The scale for individual tiles is affected by the main scale factor
     screen.blit(
             pygame.transform.scale(
