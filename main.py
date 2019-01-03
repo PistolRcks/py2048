@@ -30,21 +30,6 @@ def copy(board):
 
 old_grid = copy(board)
 
-IMAGES = [
-    pygame.image.load("0.png"),
-    pygame.image.load("2.png"),
-    pygame.image.load("4.png"),
-    pygame.image.load("8.png"),
-    pygame.image.load("16.png"),
-    pygame.image.load("32.png"),
-    pygame.image.load("64.png"),
-    pygame.image.load("128.png"),
-    pygame.image.load("256.png"),
-    pygame.image.load("512.png"),
-    pygame.image.load("1024.png"),
-    pygame.image.load("2048.png")
-]
-
 BG_COLOR = (150, 150, 150)
 
 COLORS = [
