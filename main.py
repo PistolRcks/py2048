@@ -1,6 +1,8 @@
 #!/usr/bin/python2.7
 import random
 import pygame
+import pygame.freetype
+import pygame.gfxdraw
 from button import Button
 from game import Board
 
@@ -30,18 +32,36 @@ def copy(board):
 old_grid = copy(board)
 
 IMAGES = [
-        pygame.image.load("0.png"),
-        pygame.image.load("2.png"),
-        pygame.image.load("4.png"),
-        pygame.image.load("8.png"),
-        pygame.image.load("16.png"),
-        pygame.image.load("32.png"),
-        pygame.image.load("64.png"),
-        pygame.image.load("128.png"),
-        pygame.image.load("256.png"),
-        pygame.image.load("512.png"),
-        pygame.image.load("1024.png"),
-        pygame.image.load("2048.png")
+    pygame.image.load("0.png"),
+    pygame.image.load("2.png"),
+    pygame.image.load("4.png"),
+    pygame.image.load("8.png"),
+    pygame.image.load("16.png"),
+    pygame.image.load("32.png"),
+    pygame.image.load("64.png"),
+    pygame.image.load("128.png"),
+    pygame.image.load("256.png"),
+    pygame.image.load("512.png"),
+    pygame.image.load("1024.png"),
+    pygame.image.load("2048.png")
+]
+
+BG_COLOR = pygame.Color('#282828')
+
+COLORS = [
+    BG_COLOR,
+    pygame.Color('#689d6a'),
+    pygame.Color('#427b58'),
+    pygame.Color('#b16286'),
+    pygame.Color('#8f3f71'),
+    pygame.Color('#458588'),
+    pygame.Color('#076678'),
+    pygame.Color('#d79921'),
+    pygame.Color('#b57614'),
+    pygame.Color('#98971a'),
+    pygame.Color('#79740e'),
+    pygame.Color('#cc241d'),
+    pygame.Color('#9d0006'),
 ]
 
 def quitGame():
@@ -94,17 +114,97 @@ key_action = {
     pygame.K_a : autoSwitch,
 }
 
+SCALE = 100
+
 def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
+
+    padding = int(SCALE / 20)
+    width = SCALE + padding
+    height = SCALE + padding
+    r = int(0.20 * SCALE) # Radius of the rounded corners
+    color = COLORS[board.get(x, y)]
+
+    rounded_rect = pygame.Surface((width, height))
+    rounded_rect.fill(BG_COLOR)
+
+    circle_centers = [
+        (r, r),
+        (r, height - r),
+        (width - r, r),
+        (width - r, height - r),
+    ]
+
+    rects = [
+        (r, 0, width - (2 * r), height),
+        (0, r, width, height - (2 * r)),
+    ]
+
+    for center in circle_centers:
+        pygame.gfxdraw.aacircle(rounded_rect, center[0], center[1], r - 0, color)
+        pygame.gfxdraw.filled_circle(rounded_rect, center[0], center[1], r - 0, color)
+        # pygame.draw.circle(rounded_rect, COLORS[board.get(x, y)], center, r)
+
+    for rect in rects:
+        pygame.draw.rect(rounded_rect, COLORS[board.get(x, y)], rect)
+
+    # rounded_rect.fill((255, 255, 255, 0.5), special_flags=pygame.BLEND_RGBA_MAX)
+    # rounded_rect.fill((255,255,255, 0.5),special_flags=pygame.BLEND_RGBA_MIN)
+
+    font_size = SCALE / 5 * scale / 100
+    font = pygame.freetype.Font(None, size=font_size)
+    text = font.render(str(2 ** board.get(x, y)), fgcolor=(255, 255, 255), size=font_size)[0]
+    text_rect = text.get_rect(center=(width / 2, height / 2))
+    rounded_rect.blit(text, text_rect)
+
+    # scale_offset = SCALE / 2 * (100 - scale) / 100
+
+    # top    = (y * SCALE + r + padding) + offsetx
+    # bottom = (y * SCALE + SCALE - r - padding) - offsetx
+    # left   = (x * SCALE + r + padding) + offsety
+    # right  = (x * SCALE + SCALE - r - padding) - offsety
+
+    # circle_centers = [
+    #     (left, top),
+    #     (left, bottom),
+    #     (right, top),
+    #     (right, bottom),
+    # ]
+
+    # small = SCALE - (padding + scale_offset + r) * 2
+    # large = SCALE - (padding + scale_offset) * 2
+
+    # rects = [
+    #     (left - r, top, large, small),
+    #     (left, top - r, small, large),
+    # ]
+
+    # for center in circle_centers:
+    #     pygame.draw.circle(screen, COLORS[board.get(x, y)], center, r)
+
+    # for rect in rects:
+    #     pygame.draw.rect(screen, COLORS[board.get(x, y)], rect)
+
+    # font_size = SCALE / 5 * scale / 100
+    # font = pygame.freetype.Font(None, size=font_size)
+    # text = font.render(str(2 ** board.get(x, y)), fgcolor=(255, 255, 255), size=font_size)[0]
+    # text_rect = text.get_rect(center=(x * SCALE + SCALE / 2, y * SCALE + SCALE / 2))
+    # screen.blit(text, text_rect)
+    
+    # text = str(2 ** board.get(x, y))
+    # rendered_text = font.render(text)
+    # text_bounds = font.get_rect(rendered_text, size=int(SCALE / 5 * (100 - scale) / 100))
+    # font.render_to(screen, ((x * SCALE - text_bounds.width) / 2, (y * SCALE - text_bounds.height) / 2), None, fgcolor=(255, 255, 255))
+
     screen.blit(
-            pygame.transform.scale(
-                IMAGES[board.get(x, y)],
+            pygame.transform.smoothscale(
+                rounded_rect,
                 (scale * 90 / 100, scale * 90 / 100)),
             ((x * 100 + .5 * (100 - scale) + 5) + offsetx, (y * 100 + (.5 * (100 - scale) + 5)) + offsety))
 
 def draw(direction):
     global animate_percentage
     pygame.display.set_caption("Score: " + str(board.score) + "        " + message)
-    screen.fill(GRAY)
+    screen.fill(BG_COLOR)
     button_restart.draw(screen)
     button_help.draw(screen)
     changed = board
