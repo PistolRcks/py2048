@@ -2,7 +2,7 @@
 import random
 import pygame
 import sys
-import pygame.freetype
+import pygame.font
 import pygame.gfxdraw
 from button import Button
 from game import Board
@@ -109,10 +109,10 @@ key_action = {
     pygame.K_a : autoSwitch,
 }
 
-# Render at double the actual scale first so that we can 
-# use smoothscale to effectively antialias the corners of 
+# Render at double the actual scale first so that we can
+# use smoothscale to effectively antialias the corners of
 # the rounded rectangle.
-SCALE = 200 
+SCALE = 200
 
 
 def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
@@ -146,8 +146,8 @@ def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
         pygame.draw.rect(rounded_rect, color, rect)
 
     font_size = SCALE / 5 * scale / 100
-    font = pygame.freetype.Font(None, size=font_size)
-    text = font.render(str(2 ** board.get(x, y)), fgcolor=(255, 255, 255), size=font_size)[0]
+    font = pygame.font.Font(pygame.font.get_default_font(), font_size)
+    text = font.render(str(2 ** board.get(x, y)), True, (255, 255, 255))
     text_rect = text.get_rect(center=(width / 2, height / 2))
     rounded_rect.blit(text, text_rect)
 
