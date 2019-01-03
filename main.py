@@ -16,7 +16,6 @@ pygame.init()
 clock = pygame.time.Clock()
 size = (400, 430)
 screen = pygame.display.set_mode(size)
-GRAY = (150, 150, 150)
 auto = False
 board = Board(4, 4)
 animate_percentage = 0
@@ -46,7 +45,7 @@ IMAGES = [
     pygame.image.load("2048.png")
 ]
 
-BG_COLOR = pygame.Color('#282828')
+BG_COLOR = (150, 150, 150)
 
 COLORS = [
     BG_COLOR,
@@ -114,15 +113,19 @@ key_action = {
     pygame.K_a : autoSwitch,
 }
 
-SCALE = 100
+# Render at double the actual scale first so that we can 
+# use smoothscale to effectively antialias the corners of 
+# the rounded rectangle.
+SCALE = 200 
+
 
 def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
 
     padding = int(SCALE / 20)
     width = SCALE + padding
     height = SCALE + padding
-    r = int(0.20 * SCALE) # Radius of the rounded corners
-    color = COLORS[board.get(x, y)]
+    r = int(0.1 * SCALE) # Radius of the rounded corners
+    color = COLORS[board.get(x, y) % len(COLORS)]
 
     rounded_rect = pygame.Surface((width, height))
     rounded_rect.fill(BG_COLOR)
@@ -135,65 +138,22 @@ def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
     ]
 
     rects = [
-        (r, 0, width - (2 * r), height),
-        (0, r, width, height - (2 * r)),
+        (r, 0.5, width - (2 * r), height),
+        (0.5, r, width, height - (2 * r)),
     ]
 
     for center in circle_centers:
         pygame.gfxdraw.aacircle(rounded_rect, center[0], center[1], r - 0, color)
         pygame.gfxdraw.filled_circle(rounded_rect, center[0], center[1], r - 0, color)
-        # pygame.draw.circle(rounded_rect, COLORS[board.get(x, y)], center, r)
 
     for rect in rects:
-        pygame.draw.rect(rounded_rect, COLORS[board.get(x, y)], rect)
-
-    # rounded_rect.fill((255, 255, 255, 0.5), special_flags=pygame.BLEND_RGBA_MAX)
-    # rounded_rect.fill((255,255,255, 0.5),special_flags=pygame.BLEND_RGBA_MIN)
+        pygame.draw.rect(rounded_rect, color, rect)
 
     font_size = SCALE / 5 * scale / 100
     font = pygame.freetype.Font(None, size=font_size)
     text = font.render(str(2 ** board.get(x, y)), fgcolor=(255, 255, 255), size=font_size)[0]
     text_rect = text.get_rect(center=(width / 2, height / 2))
     rounded_rect.blit(text, text_rect)
-
-    # scale_offset = SCALE / 2 * (100 - scale) / 100
-
-    # top    = (y * SCALE + r + padding) + offsetx
-    # bottom = (y * SCALE + SCALE - r - padding) - offsetx
-    # left   = (x * SCALE + r + padding) + offsety
-    # right  = (x * SCALE + SCALE - r - padding) - offsety
-
-    # circle_centers = [
-    #     (left, top),
-    #     (left, bottom),
-    #     (right, top),
-    #     (right, bottom),
-    # ]
-
-    # small = SCALE - (padding + scale_offset + r) * 2
-    # large = SCALE - (padding + scale_offset) * 2
-
-    # rects = [
-    #     (left - r, top, large, small),
-    #     (left, top - r, small, large),
-    # ]
-
-    # for center in circle_centers:
-    #     pygame.draw.circle(screen, COLORS[board.get(x, y)], center, r)
-
-    # for rect in rects:
-    #     pygame.draw.rect(screen, COLORS[board.get(x, y)], rect)
-
-    # font_size = SCALE / 5 * scale / 100
-    # font = pygame.freetype.Font(None, size=font_size)
-    # text = font.render(str(2 ** board.get(x, y)), fgcolor=(255, 255, 255), size=font_size)[0]
-    # text_rect = text.get_rect(center=(x * SCALE + SCALE / 2, y * SCALE + SCALE / 2))
-    # screen.blit(text, text_rect)
-    
-    # text = str(2 ** board.get(x, y))
-    # rendered_text = font.render(text)
-    # text_bounds = font.get_rect(rendered_text, size=int(SCALE / 5 * (100 - scale) / 100))
-    # font.render_to(screen, ((x * SCALE - text_bounds.width) / 2, (y * SCALE - text_bounds.height) / 2), None, fgcolor=(255, 255, 255))
 
     screen.blit(
             pygame.transform.smoothscale(
