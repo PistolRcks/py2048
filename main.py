@@ -49,7 +49,7 @@ def quitGame():
     done = True
 
 def move(direction):
-    global animate_percentage, old_grid
+    global animate_percentage, old_grid, last_direction
     animate_percentage = 0
     old_grid = copy(board)
     if board.move(direction):
@@ -70,6 +70,13 @@ def autoSwitch():
     global auto
     auto = not auto
 
+auto_disallowed_keys = [
+    pygame.K_LEFT,
+    pygame.K_RIGHT,
+    pygame.K_UP,
+    pygame.K_DOWN
+]
+
 def restart():
     global board
     board = Board(4, 4)
@@ -87,12 +94,12 @@ key_action = {
     pygame.K_a : autoSwitch,
 }
 
-def draw_tile(x, y, scale):
+def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
     screen.blit(
             pygame.transform.scale(
                 IMAGES[board.get(x, y)],
                 (scale * 90 / 100, scale * 90 / 100)),
-            (x * 100 + .5 * (100 - scale) + 5, y * 100 + (.5 * (100 - scale) + 5)))
+            ((x * 100 + .5 * (100 - scale) + 5) + offsetx, (y * 100 + (.5 * (100 - scale) + 5)) + offsety))
 
 def draw(direction):
     global animate_percentage
@@ -103,9 +110,9 @@ def draw(direction):
     changed = board
     ranges = {
         'left': range(board.width),
-        'right': reversed(range(board.width)),
+        'right': range(board.width),
         'up': range(board.height),
-        'down': reversed(range(board.height)),
+        'down': range(board.height),
     }
 
     if direction == 'left' or direction == 'right':
@@ -114,22 +121,27 @@ def draw(direction):
             for x in ranges[direction]:
                 if board.get(x, y) != old_grid[y * board.width + x]:
                     animated = True
-                if animated:
-                    draw_tile(x, y, animate_percentage)
-                else:
-                    draw_tile(x, y, 100)
+                if animated and board.get(x, y) != 0:
+                    if direction == 'left':
+                        draw_tile(x, y, 1 * (100 - animate_percentage), 0, max(animate_percentage, 50))
+                    else:
+                        draw_tile(x, y, -(1 * (100 - animate_percentage)), 0, max(animate_percentage, 50))
+                elif board.get(x, y) != 0:
+                    draw_tile(x, y)
     else:
         for x in range(board.width):
             animated = False
             for y in ranges[direction]:
-                if board.get(x, y) != old_grid[y * board.width + x] and animate_percentage < 100:
+                if board.get(x, y) != old_grid[y * board.width + x]:
                     animated = True
-                if animated:
-                    draw_tile(x, y, animate_percentage)
-                else:
-                    draw_tile(x, y, 100)
-
-    animate_percentage += 12
+                if animated and board.get(x, y) != 0:
+                    if direction == 'up':
+                        draw_tile(x, y, 0, 1 * (100 - animate_percentage), max(animate_percentage, 50))
+                    else:
+                        draw_tile(x, y, 0, -(1 * (100 - animate_percentage)), max(animate_percentage, 50))
+                elif board.get(x, y) != 0:
+                    draw_tile(x, y)
+    animate_percentage = min(100, animate_percentage + 12) #Make sure that the animation percentage doesn't go above 100
     pygame.display.flip()
 
 if __name__ == "__main__":
@@ -142,7 +154,11 @@ if __name__ == "__main__":
                 done = True
             elif event.type == pygame.KEYDOWN:
                 try:
-                    key_action[event.key]()
+                    if auto and not event.key in auto_disallowed_keys:
+                        #Don't allow movement while auto is on
+                        key_action[event.key]()
+                    elif not auto:
+                        key_action[event.key]()
                 except KeyError:
                     pass
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -151,7 +167,7 @@ if __name__ == "__main__":
                 elif button_help.clickable():
                     message = "Use arrow keys to move."
 
-        if auto:
+        if auto and animate_percentage >= 100:
             autoPlay()
             message = "Auto is on."
         draw(last_direction)
