@@ -145,7 +145,7 @@ def draw_tile(x, y, offsetx=0, offsety=0, scale=100):
     for rect in rects:
         pygame.draw.rect(rounded_rect, color, rect)
 
-    font_size = SCALE / 5 * scale / 100
+    font_size = SCALE / 3 * scale / 100
     font = pygame.font.Font(pygame.font.get_default_font(), font_size)
     text = font.render(str(2 ** board.get(x, y)), True, (255, 255, 255))
     text_rect = text.get_rect(center=(width / 2, height / 2))
